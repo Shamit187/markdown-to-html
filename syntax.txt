@@ -1,0 +1,156 @@
+markdown syntax
+
+# heading 1
+<h1>heading 1</h1>
+
+## heading 2
+<h2>heading 2</h2>
+
+### heading 3
+<h3>heading 3</h3>
+
+#### heading 4
+<h4>heading 4</h4>
+
+##### heading 5
+<h5>heading 5</h5>
+
+###### heading 6
+<h6>heading 6</h6>
+
+*italic*
+<i>italic</i>
+
+**bold**
+<b>bold</b>
+
+***bold italic***
+<b><i>bold italic</i></b>
+
+~~strikethrough~~
+<s>strikethrough</s>
+
+~underline~
+<u>underline</u>
+
+<em>emphasis</em>
+<em>emphasis</em>
+
+[link](https://www.example.com)
+<a href="https://www.example.com">link</a>
+
+![image][width][height](https://www.example.com/image.jpg)
+<img src="https://www.example.com/image.jpg" width="width" height="height">
+
+- list item
+<ul>
+  <li>list item</li>
+</ul>
+
+- list item
+  - nested list item
+<ul>
+    <li>list item
+        <ul>
+        <li>nested list item</li>
+        </ul>
+    </li>
+</ul>
+
+1. ordered list item
+<ol>
+  <li>ordered list item</li>
+</ol>
+
+<br> line break
+<br>
+
+Normal text
+<p>Normal text</p>
+
+*****************Custom Tailwind Class************************
+
+> blockquote
+?
+
+{Hint}
+?
+
+--- 
+? horizontal rule
+
+<csv+delim>
+header1 delim header2 delim header3
+row1 delim cell2 delim cell3
+row2 delim cell2 delim cell3
+</csv+delim>
+?
+
+<color> color text </color>
+?
+
+<!color> highlighted with color text </!color>
+?
+
+(Comment)(This comment explains the text on side)
+?
+
+<spoiler>spoiler text</spoiler>
+?
+
+*****************Code************************
+`code`
+?
+
+```code block```
+?
+<pre><code>
+    #include <iostream>
+    using namespace std;
+
+    int main() {
+        cout << "Hello, World!";
+        return 0;
+    }
+</code></pre>
+later use prism.js to highlight code
+
+
+*****************Mathjax************************
+
+$ Inline Equation $
+?
+
+$$ Block Equation $$
+?
+
+*****************Comment************************
+! This is a comment
+
+
+*****************Escape Character************************
+\#
+\*
+\-
+\[
+\]
+\(
+\)
+\{
+\}
+\!
+\`
+\>
+\|
+\<
+\>
+\~
+\$
+\?
+
+
+*****************Missing************************
+Superscript
+Subscript
+Citation
+Footnote
