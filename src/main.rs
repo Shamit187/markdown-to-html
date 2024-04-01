@@ -1,4 +1,5 @@
 use std::fs;
+use regex::Regex;
 static INPUT: &str = "markdown.md";
 static OUTPUT: &str = "index.html";
 
@@ -106,6 +107,39 @@ fn line_tokenizer(line: &str) -> LineToken {
 
 fn modifiy_text_with_design(text: String) -> String {
     // need to implement this
+    
+    // substitute *text* with <i> text </i>
+    let italic_regex = Regex::new(r"\*(.*?)\*").unwrap();
+    let text = italic_regex.replace_all(&text, "<i>$1</i>").to_string();
+
+    // substitute **text** with <b> text </b>
+    let bold_regex = Regex::new(r"\*\*(.*?)\*\*").unwrap();
+    let text = bold_regex.replace_all(&text, "<b>$1</b>").to_string();
+
+    // substitute ***text*** with <b><i> text </i></b>
+    let bold_italic_regex = Regex::new(r"\*\*\*(.*?)\*\*\*").unwrap();
+    let text = bold_italic_regex.replace_all(&text, "<b><i>$1</i></b>").to_string();
+
+    // substitute ~~text~~ with <s> text </s>
+    let strikethrough_regex = Regex::new(r"~~(.*?)~~").unwrap();
+    let text = strikethrough_regex.replace_all(&text, "<s>$1</s>").to_string();
+
+    // substitute ~text~ with <u> text </u>
+    let underline_regex = Regex::new(r"~(.*?)~").unwrap();
+    let text = underline_regex.replace_all(&text, "<u>$1</u>").to_string();
+
+    // substitute `text` with <code> text </code>
+    let code_regex = Regex::new(r"`(.*?)`").unwrap();
+    let text = code_regex.replace_all(&text, "<code>$1</code>").to_string();
+
+    // subsitute <color:red>text</color:red> with <span style="color: red"> text </span>
+    let color_regex = Regex::new(r"<color:(.*?)>(.*?)</color:(.*?)>").unwrap();
+    let text = color_regex.replace_all(&text, "<span style=\"color: $1\">$2</span>").to_string();
+
+    // substitute <!color:red>text</!color:red> with <span style="background-color: red"> text </span>
+    let highlight_regex = Regex::new(r"<!color:(.*?)>(.*?)</!color:(.*?)>").unwrap();
+    let text = highlight_regex.replace_all(&text, "<span style=\"background-color: $1\">$2</span>").to_string();
+
     text
 }
 
