@@ -1,41 +1,54 @@
 markdown syntax
 
+>
 # heading 1
 <h1>heading 1</h1>
 
+>
 ## heading 2
 <h2>heading 2</h2>
 
+>
 ### heading 3
 <h3>heading 3</h3>
 
+>
 #### heading 4
 <h4>heading 4</h4>
 
+>
 ##### heading 5
 <h5>heading 5</h5>
 
+>
 ###### heading 6
 <h6>heading 6</h6>
 
+>
 *italic*
 <i>italic</i>
 
+>
 **bold**
 <b>bold</b>
 
+>
 ***bold italic***
 <b><i>bold italic</i></b>
 
+>
 ~~strikethrough~~
 <s>strikethrough</s>
 
+>
 ~underline~
 <u>underline</u>
 
+>
 <em>emphasis</em>
 <em>emphasis</em>
 
+>
 [link](https://www.example.com)
 <a href="https://www.example.com">link</a>
 
@@ -62,20 +75,24 @@ markdown syntax
   <li>ordered list item</li>
 </ol>
 
+>
 <br> line break
 <br>
 
+>
 Normal text
 <p>Normal text</p>
 
 *****************Custom Tailwind Class************************
 
+>
 > blockquote
 ?
 
 {Hint}
 ?
 
+>
 --- 
 ? horizontal rule
 
@@ -86,9 +103,11 @@ row2 delim cell2 delim cell3
 </csv+delim>
 ?
 
+>
 <color> color text </color>
 ?
 
+>
 <!color> highlighted with color text </!color>
 ?
 

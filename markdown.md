@@ -1,15 +1,3 @@
-# Markdown to HTML
+# Comment Test
 
-This is the heading
-
-## This is a subheading
-
-Well u see.. life sucks
-
-> So here is a quote
-
---- 
-
-Hello, guys! This is a markdown file.
-This is going to be converted to HTML.
-
+This is a test of comments in markdown. This is a (comment)(Hello This is the hidden information). That is (all)(another hidden message).

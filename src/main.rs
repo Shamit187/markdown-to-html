@@ -1,7 +1,9 @@
-use std::fs;
 use regex::Regex;
+use std::fs;
 static INPUT: &str = "markdown.md";
 static OUTPUT: &str = "index.html";
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 enum LineToken {
     Heading1(String),
@@ -12,8 +14,8 @@ enum LineToken {
     Heading6(String),
     Paragraph(String),
     // List(String),
-    /* 
-        Idea for list (and CodeBlock): 
+    /*
+        Idea for list (and CodeBlock):
         1. line_tokenizer returns list token
         2. token_to_html does not return anything, it should have a static storage, where it will store the list item
         3. if the next token is not a list token, it will return the list along with the other token that was given
@@ -27,10 +29,16 @@ enum LineToken {
     HorizontalRule,
     Image(String, String, String, String),
     // Table(Vec<Vec<String>>),
-    /* 
+    /*
         I have no idea how to add table
     */
-    Empty
+    Empty,
+}
+
+struct Comment {
+    comment_token: String,
+    replaceable: String,
+    reference: String,
 }
 
 // struct Color {
@@ -64,7 +72,6 @@ enum LineToken {
 //     // FootnoteReference(String),
 // }
 
-
 fn start() {
     let markdown = fs::read_to_string(INPUT).expect("Error reading file");
     let html = markdown_to_html(markdown);
@@ -92,37 +99,51 @@ fn line_tokenizer(line: &str) -> LineToken {
         LineToken::HorizontalRule
     } else if line.starts_with("![](") {
         // need to modifiy this one
-        LineToken::Image("source".to_string(), "alt".to_string(), "height".to_string(), "width".to_string())
-    } 
+        LineToken::Image(
+            "source".to_string(),
+            "alt".to_string(),
+            "height".to_string(),
+            "width".to_string(),
+        )
+    }
     // else if line.starts_with("- ") {
-        // process list
+    // process list
     // }
     // else if line.starts_with("```") {
-        // process code block
+    // process code block
     // }
     else {
         LineToken::Paragraph(line.to_string())
     }
 }
 
-fn modifiy_text_with_design(text: String) -> String {
-    // need to implement this
-    
-    // substitute *text* with <i> text </i>
-    let italic_regex = Regex::new(r"\*(.*?)\*").unwrap();
-    let text = italic_regex.replace_all(&text, "<i>$1</i>").to_string();
+fn hash_string_to_integer(input: &str) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    input.hash(&mut hasher);
+    hasher.finish()
+}
+
+fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String {
+
+    // substitute ***text*** with <b><i> text </i></b>
+    let bold_italic_regex = Regex::new(r"\*\*\*(.*?)\*\*\*").unwrap();
+    let text = bold_italic_regex
+        .replace_all(&text, "<b><i>$1</i></b>")
+        .to_string();
 
     // substitute **text** with <b> text </b>
     let bold_regex = Regex::new(r"\*\*(.*?)\*\*").unwrap();
     let text = bold_regex.replace_all(&text, "<b>$1</b>").to_string();
 
-    // substitute ***text*** with <b><i> text </i></b>
-    let bold_italic_regex = Regex::new(r"\*\*\*(.*?)\*\*\*").unwrap();
-    let text = bold_italic_regex.replace_all(&text, "<b><i>$1</i></b>").to_string();
+    // substitute *text* with <i> text </i>
+    let italic_regex = Regex::new(r"\*(.*?)\*").unwrap();
+    let text = italic_regex.replace_all(&text, "<i>$1</i>").to_string();
 
     // substitute ~~text~~ with <s> text </s>
     let strikethrough_regex = Regex::new(r"~~(.*?)~~").unwrap();
-    let text = strikethrough_regex.replace_all(&text, "<s>$1</s>").to_string();
+    let text = strikethrough_regex
+        .replace_all(&text, "<s>$1</s>")
+        .to_string();
 
     // substitute ~text~ with <u> text </u>
     let underline_regex = Regex::new(r"~(.*?)~").unwrap();
@@ -133,72 +154,118 @@ fn modifiy_text_with_design(text: String) -> String {
     let text = code_regex.replace_all(&text, "<code>$1</code>").to_string();
 
     // subsitute <color:red>text</color:red> with <span style="color: red"> text </span>
-    let color_regex = Regex::new(r"<color:(.*?)>(.*?)</color:(.*?)>").unwrap();
-    let text = color_regex.replace_all(&text, "<span style=\"color: $1\">$2</span>").to_string();
+    let color_regex = Regex::new(r"<color:(.*?)>(.*?)</color>").unwrap();
+    let text = color_regex
+        .replace_all(&text, "<span style=\"color: $1\">$2</span>")
+        .to_string();
 
     // substitute <!color:red>text</!color:red> with <span style="background-color: red"> text </span>
-    let highlight_regex = Regex::new(r"<!color:(.*?)>(.*?)</!color:(.*?)>").unwrap();
-    let text = highlight_regex.replace_all(&text, "<span style=\"background-color: $1\">$2</span>").to_string();
+    let highlight_regex = Regex::new(r"<!color:(.*?)>(.*?)</!color>").unwrap();
+    let text = highlight_regex
+        .replace_all(&text, "<span style=\"background-color: $1\">$2</span>")
+        .to_string();
+
+    // substitute [text](link) with <a href="link"> text </a>
+    let link_regex = Regex::new(r"\[(.*?)\]\((.*?)\)").unwrap();
+    let text = link_regex
+        .replace_all(&text, "<a href=\"$2\">$1</a>")
+        .to_string();
+
+    // substitute <spoiler>text</spoiler> with <span class="spoiler"> text </span>
+    let spoiler_regex = Regex::new(r"<spoiler>(.*?)</spoiler>").unwrap();
+    let text = spoiler_regex
+        .replace_all(&text, "<span class=\"spoiler\">$1</span>")
+        .to_string();
+
+    // substitute (text)(This comment explains the text on side) with <span class="comment"> text </span>
+    let comment_regex = Regex::new(r"\((.*?)\)\((.*?)\)").unwrap();
+    let mut comments_found: Vec<Comment> = Vec::new();
+    // capture all comments
+    for comment in comment_regex.captures_iter(&text) {
+        let comment_text = format!("({})({})", &comment[1], &comment[2]);
+        let comment_id = hash_string_to_integer(&comment_text);
+        comments_found.push(Comment {
+            comment_token: comment_text,
+            replaceable: format!("<span class=\"comment\" target={}>{}</span>", comment_id, &comment[1]),
+            reference: format!("<span id={}>{}</span>", comment_id, &comment[2]),
+        });
+    }
+    // replace all comments
+    let mut replaced_text = text.clone();
+    for comment in comments_found {
+        replaced_text = replaced_text.replace(&comment.comment_token, &comment.replaceable);
+        comments.push(comment.reference);
+    }
+    let text = replaced_text;
 
     text
 }
 
-fn token_to_html(token: LineToken) -> String {
+fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
     // static storage: String = String::new();
     match token {
         LineToken::Heading1(text) => {
             format!("<h1>{}</h1>", text)
-        },
+        }
         LineToken::Heading2(text) => {
             format!("<h2>{}</h2>", text)
-        },
+        }
         LineToken::Heading3(text) => {
             format!("<h3>{}</h3>", text)
-        },
+        }
         LineToken::Heading4(text) => {
             format!("<h4>{}</h4>", text)
-        },
+        }
         LineToken::Heading5(text) => {
             format!("<h5>{}</h5>", text)
-        },
+        }
         LineToken::Heading6(text) => {
             format!("<h6>{}</h6>", text)
-        },
-        LineToken::Paragraph(text) => {
-            let text = modifiy_text_with_design(text);
-            format!("<p>{}</p>", text)
-        },
-        LineToken::Quote(text) => {
-            let text = modifiy_text_with_design(text);
-            format!("<blockquote>{}</blockquote>", text)
-        },
-        LineToken::HorizontalRule => {
-            "<hr>".to_string()
         }
+        LineToken::Paragraph(text) => {
+            let text = modifiy_text_with_design(text, comments);
+            format!("<p>{}</p>", text)
+        }
+        LineToken::Quote(text) => {
+            let text = modifiy_text_with_design(text, comments);
+            format!("<blockquote>{}</blockquote>", text)
+        }
+        LineToken::HorizontalRule => "<hr>".to_string(),
         LineToken::Image(source, alt, height, width) => {
-            format!("<img src=\"{}\" alt=\"{}\" height=\"{}\" width=\"{}\">", source, alt, height, width)
-        },
+            format!(
+                "<img src=\"{}\" alt=\"{}\" height=\"{}\" width=\"{}\">",
+                source, alt, height, width
+            )
+        }
         LineToken::Empty => "".to_string(),
     }
 }
 
-
 fn markdown_to_html(markdown: String) -> String {
     let mut html = String::new();
+    // static storage of vectors of strings for comments
+    let mut comments: Vec<String> = Vec::new();
+
     for line in markdown.lines() {
         // tokenize line
         let line_token = line_tokenizer(line);
 
         // convert token to html
-        let line_html = token_to_html(line_token);
+        let line_html = token_to_html(line_token, &mut comments);
 
         // add a newline for good luck
         // remove this line in final version
         let line_html = format!("{}\n", line_html);
-        
+
         // append to html
         html.push_str(&line_html);
     }
+
+    // add comments
+    for comment in comments {
+        html.push_str(&format!("<span class=\"comment_explain\">{}</span>\n", comment));
+    }
+
     html
 }
 
