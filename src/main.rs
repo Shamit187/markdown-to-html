@@ -4,6 +4,7 @@ static INPUT: &str = "markdown.md";
 static OUTPUT: &str = "index.html";
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::time::Instant;
 
 enum LineToken {
     Heading1(String),
@@ -97,7 +98,7 @@ fn line_tokenizer(line: &str) -> LineToken {
         LineToken::Quote(line[2..].to_string())
     } else if line.starts_with("---") {
         LineToken::HorizontalRule
-    } else if line.starts_with("![](") {
+    } else if line.starts_with("![") {
         // need to modifiy this one
         LineToken::Image(
             "source".to_string(),
@@ -112,7 +113,9 @@ fn line_tokenizer(line: &str) -> LineToken {
     // else if line.starts_with("```") {
     // process code block
     // }
-    else {
+    else if line.starts_with("!") {
+        LineToken::Empty
+    } else {
         LineToken::Paragraph(line.to_string())
     }
 }
@@ -124,6 +127,45 @@ fn hash_string_to_integer(input: &str) -> u64 {
 }
 
 fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String {
+    // substitute all escape characters
+    /*
+        \#
+        \*
+        \-
+        \[
+        \]
+        \(
+        \)
+        \{
+        \}
+        \!
+        \`
+        \>
+        \|
+        \<
+        \>
+        \~
+        \$
+        \?
+    */
+    let text = text.replace(r"\#", "\\+hash");
+    let text = text.replace(r"\*", "\\+star");
+    let text = text.replace(r"\-", "\\+dash");
+    let text = text.replace(r"\[", "\\+leftsquare");
+    let text = text.replace(r"\]", "\\+rightsquare");
+    let text = text.replace(r"\(", "\\+leftparen");
+    let text = text.replace(r"\)", "\\+rightparen");
+    let text = text.replace(r"\{", "\\+leftcurly");
+    let text = text.replace(r"\}", "\\+rightcurly");
+    let text = text.replace(r"\!", "\\+exclamation");
+    let text = text.replace(r"\`", "\\+backtick");
+    let text = text.replace(r"\>", "\\+greater");
+    let text = text.replace(r"\|", "\\+pipe");
+    let text = text.replace(r"\<", "\\+lesser");
+    let text = text.replace(r"\>", "\\+greater");
+    let text = text.replace(r"\~", "\\+tilde");
+    let text = text.replace(r"\$", "\\+dollar");
+    let text = text.replace(r"\?", "\\+question");
 
     // substitute ***text*** with <b><i> text </i></b>
     let bold_italic_regex = Regex::new(r"\*\*\*(.*?)\*\*\*").unwrap();
@@ -186,7 +228,10 @@ fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String 
         let comment_id = hash_string_to_integer(&comment_text);
         comments_found.push(Comment {
             comment_token: comment_text,
-            replaceable: format!("<span class=\"comment\" target={}>{}</span>", comment_id, &comment[1]),
+            replaceable: format!(
+                "<span class=\"comment\" target={}>{}</span>",
+                comment_id, &comment[1]
+            ),
             reference: format!("<span id={}>{}</span>", comment_id, &comment[2]),
         });
     }
@@ -197,6 +242,26 @@ fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String 
         comments.push(comment.reference);
     }
     let text = replaced_text;
+
+    // substitute back all escape characters
+    let text = text.replace("\\+hash", "#");
+    let text = text.replace("\\+star", "*");
+    let text = text.replace("\\+dash", "-");
+    let text = text.replace("\\+leftsquare", "[");
+    let text = text.replace("\\+rightsquare", "]");
+    let text = text.replace("\\+leftparen", "(");
+    let text = text.replace("\\+rightparen", ")");
+    let text = text.replace("\\+leftcurly", "{");
+    let text = text.replace("\\+rightcurly", "}");
+    let text = text.replace("\\+exclamation", "!");
+    let text = text.replace("\\+backtick", "`");
+    let text = text.replace("\\+greater", ">");
+    let text = text.replace("\\+pipe", "|");
+    let text = text.replace("\\+lesser", "&lt;");
+    let text = text.replace("\\+greater", "&gt;");
+    let text = text.replace("\\+tilde", "~");
+    let text = text.replace("\\+dollar", "$");
+    let text = text.replace("\\+question", "?");
 
     text
 }
@@ -263,12 +328,22 @@ fn markdown_to_html(markdown: String) -> String {
 
     // add comments
     for comment in comments {
-        html.push_str(&format!("<span class=\"comment_explain\">{}</span>\n", comment));
+        html.push_str(&format!(
+            "<span class=\"comment_explain\">{}</span>\n",
+            comment
+        ));
     }
 
     html
 }
 
 fn main() {
+    let start_time = Instant::now();
+
     start();
+
+    let end_time = Instant::now();
+    let duration = end_time - start_time;
+
+    println!("Elapsed time: {:?}", duration);
 }
