@@ -219,6 +219,18 @@ fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String 
         .replace_all(&text, "<span class=\"spoiler\">$1</span>")
         .to_string();
 
+    // substitute $$text$$ with \[ text \]
+    let block_equation_regex = Regex::new(r"\$\$(.*?)\$\$").unwrap();
+    let text = block_equation_regex
+        .replace_all(&text, "\\[$1\\]")
+        .to_string();
+
+    // substitue $text$ with \( text \)
+    let inline_equation_regex = Regex::new(r"\$(.*?)\$").unwrap();
+    let text = inline_equation_regex
+        .replace_all(&text, "\\($1\\)")
+        .to_string();
+
     // substitute (text)(This comment explains the text on side) with <span class="comment"> text </span>
     let comment_regex = Regex::new(r"\((.*?)\)\((.*?)\)").unwrap();
     let mut comments_found: Vec<Comment> = Vec::new();
@@ -306,8 +318,50 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
     }
 }
 
+static HTML_HEAD: &str = r#"
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        clifford: '#da373d',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+          .content-auto {
+            content-visibility: auto;
+          }
+        }
+    </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+"#;
+
+static HTML_TAIL: &str = r#"
+</body>
+
+</html>
+"#;
+
 fn markdown_to_html(markdown: String) -> String {
     let mut html = String::new();
+
+    html.push_str(HTML_HEAD);
+
     // static storage of vectors of strings for comments
     let mut comments: Vec<String> = Vec::new();
 
@@ -333,6 +387,8 @@ fn markdown_to_html(markdown: String) -> String {
             comment
         ));
     }
+
+    html.push_str(HTML_TAIL);
 
     html
 }
