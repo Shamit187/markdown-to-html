@@ -341,6 +341,10 @@ static HTML_HEAD: &str = r#"
           .content-auto {
             content-visibility: auto;
           }
+          .spoiler {
+            background-color: black;
+            color: black;
+          }
         }
     </style>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
