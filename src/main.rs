@@ -195,16 +195,26 @@ fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String 
     let code_regex = Regex::new(r"`(.*?)`").unwrap();
     let text = code_regex.replace_all(&text, "<code>$1</code>").to_string();
 
-    // subsitute <color:red>text</color:red> with <span style="color: red"> text </span>
-    let color_regex = Regex::new(r"<color:(.*?)>(.*?)</color>").unwrap();
+    // subsitute <red>text</red> with <span class="red-text"> text </span>
+    // subsitute <teal>text</teal> with <span class="teal-text"> text </span>
+    // subsitute <green>text</green> with <span class="green-text"> text </span>
+    // subsitute <orange>text</orange> with <span class="orange-text"> text </span>
+    // allowed color red, teal, green, orange
+    let color_regex =
+        Regex::new(r"<(red|teal|green|orange)>(.*?)</(red|teal|green|orange)>").unwrap();
     let text = color_regex
-        .replace_all(&text, "<span style=\"color: $1\">$2</span>")
+        .replace_all(&text, "<span class=\"$1-text\">$2</span>")
         .to_string();
 
-    // substitute <!color:red>text</!color:red> with <span style="background-color: red"> text </span>
-    let highlight_regex = Regex::new(r"<!color:(.*?)>(.*?)</!color>").unwrap();
+    // allowed highlight colors: red, green, yellow, pink
+    // subsitute <!red>text</!red> with <span class="red-highlight"> text </span>
+    // subsitute <!green>text</!green> with <span class="green-highlight"> text </span>
+    // subsitute <!yellow>text</!yellow> with <span class="yellow-highlight"> text </span>
+    // subsitute <!pink>text</!pink> with <span class="pink-highlight"> text </span>
+    let highlight_regex =
+        Regex::new(r"<\!(red|green|yellow|pink)>(.*?)</\!(red|green|yellow|pink)>").unwrap();
     let text = highlight_regex
-        .replace_all(&text, "<span style=\"background-color: $1\">$2</span>")
+        .replace_all(&text, "<span class=\"$1-highlight\">$2</span>")
         .to_string();
 
     // substitute [text](link) with <a href="link"> text </a>
@@ -241,10 +251,10 @@ fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String 
         comments_found.push(Comment {
             comment_token: comment_text,
             replaceable: format!(
-                "<span class=\"comment\" target={}>{}</span>",
+                "<span class=\"comment\" data-target={}>{}</span>",
                 comment_id, &comment[1]
             ),
-            reference: format!("<span id={}>{}</span>", comment_id, &comment[2]),
+            reference: format!("<span id={} class=\"hidden\">{}</span>", comment_id, &comment[2]),
         });
     }
     // replace all comments
@@ -282,7 +292,7 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
     // static storage: String = String::new();
     match token {
         LineToken::Heading1(text) => {
-            format!("<h1>{}</h1>", text)
+            format!("<h1 onclick=\"toggleDarkMode()\">{}</h1>", text)
         }
         LineToken::Heading2(text) => {
             format!("<h2>{}</h2>", text)
@@ -336,26 +346,103 @@ static HTML_HEAD: &str = r#"
             }
         }
     </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-          .content-auto {
-            content-visibility: auto;
-          }
-          .spoiler {
-            background-color: black;
-            color: black;
-          }
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
         }
+    </script>
+    <style type="text/tailwindcss">
+        @layer components {
+            @media (prefers-color-scheme: dark) {
+                body.dark {
+                    @apply bg-gray-900 text-gray-200;
+                }
+            }
+        }
+        @layer utilities {
+            body {
+                @apply bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-200;
+            }
+            .spoiler {
+                @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700;
+            }
+            h1 {
+                @apply text-4xl font-bold text-center py-4;
+            }
+            h2 {
+                @apply text-3xl font-bold py-1;
+            }
+            h3 {
+                @apply text-2xl font-bold py-1;
+            }
+            h4 {
+                @apply text-xl font-bold;
+            }
+            h5 {
+                @apply text-lg font-bold;
+            }
+            h6 {
+                @apply text-base font-bold;
+            }
+            .red-text {
+                @apply text-red-500 dark:text-red-300;
+            }
+            .green-text {
+                @apply text-green-500 dark:text-green-300;
+            }
+            .teal-text {
+                @apply text-teal-500 dark:text-teal-300;
+            }
+            .orange-text {
+                @apply text-orange-500 dark:text-orange-300;
+            }
+            .red-highlight {
+                @apply bg-red-500 bg-opacity-75 rounded;
+            }
+            .green-highlight {
+                @apply bg-green-500 bg-opacity-75 rounded;
+            }
+            .yellow-highlight {
+                @apply bg-yellow-500 bg-opacity-75 rounded;
+            }
+            .pink-highlight {
+                @apply bg-pink-500 bg-opacity-75 rounded;
+            }
+            .hidden {
+                display: none;
+            }
+        }   
     </style>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const comments = document.querySelectorAll('.comment');
+            
+            comments.forEach(comment => {
+                comment.addEventListener('mouseover', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    targetElement.classList.remove('hidden');
+                });
+
+                comment.addEventListener('mouseout', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    targetElement.classList.add('hidden');
+                });
+            });
+        });
+    </script>
 </head>
 
 <body>
+<div class="py-10 px-20  flex-col space-y-2 w-100%">
 "#;
 
 static HTML_TAIL: &str = r#"
+</div>
 </body>
 
 </html>

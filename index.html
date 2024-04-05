@@ -1,6 +1,6 @@
+
 <!doctype html>
 <html>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,99 +16,164 @@
             }
         }
     </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-          .content-auto {
-            content-visibility: auto;
-          }
-          .spoiler {
-            background-color: black;
-            color: black;
-          }
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
         }
+    </script>
+    <style type="text/tailwindcss">
+        @layer components {
+            @media (prefers-color-scheme: dark) {
+                body.dark {
+                    @apply bg-gray-900 text-gray-200;
+                }
+            }
+        }
+        @layer utilities {
+            body {
+                @apply bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-200;
+            }
+            .spoiler {
+                @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700;
+            }
+            h1 {
+                @apply text-4xl font-bold text-center py-4;
+            }
+            h2 {
+                @apply text-3xl font-bold py-1;
+            }
+            h3 {
+                @apply text-2xl font-bold py-1;
+            }
+            h4 {
+                @apply text-xl font-bold;
+            }
+            h5 {
+                @apply text-lg font-bold;
+            }
+            h6 {
+                @apply text-base font-bold;
+            }
+            .red-text {
+                @apply text-red-500 dark:text-red-300;
+            }
+            .green-text {
+                @apply text-green-500 dark:text-green-300;
+            }
+            .teal-text {
+                @apply text-teal-500 dark:text-teal-300;
+            }
+            .orange-text {
+                @apply text-orange-500 dark:text-orange-300;
+            }
+            .red-highlight {
+                @apply bg-red-500 bg-opacity-75 rounded;
+            }
+            .green-highlight {
+                @apply bg-green-500 bg-opacity-75 rounded;
+            }
+            .yellow-highlight {
+                @apply bg-yellow-500 bg-opacity-75 rounded;
+            }
+            .pink-highlight {
+                @apply bg-pink-500 bg-opacity-75 rounded;
+            }
+            .hidden {
+                display: none;
+            }
+        }   
     </style>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const comments = document.querySelectorAll('.comment');
+            
+            comments.forEach(comment => {
+                comment.addEventListener('mouseover', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    targetElement.classList.remove('hidden');
+                });
+
+                comment.addEventListener('mouseout', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    targetElement.classList.add('hidden');
+                });
+            });
+        });
+    </script>
 </head>
 
 <body>
-    <h1>heading 1</h1>
-    <h2>heading 2</h2>
-    <h3>heading 3</h3>
-    <h4>heading 4</h4>
-    <h5>heading 5</h5>
-    <h6>heading 6</h6>
+<div class="py-10 px-20  flex-col space-y-2 w-100%">
+<h1 onclick="toggleDarkMode()">heading 1</h1>
+<h2>heading 2</h2>
+<h3>heading 3</h3>
+<h4>heading 4</h4>
+<h5>heading 5</h5>
+<h6>heading 6</h6>
 
-    <p>Basic Text Block. Here is <i>italic</i> text. Here is <b>bold</b> text. Here is a both <b><i>bold and
-                italic</i></b> text. Here is a <s>strikethrough</s>. Here is an <u>underline</u>. Here is
-        <em>emphasis</em>. Here is a <a href="https://www.example.com">link</a>. Here is a monospace text
-        <code>monospace</code>. Here is a <span style="color: red"> red text </span>. Here is a <span
-            style="background-color: red"> red highlighted </span> text. This text has a <span class="comment"
-            target=14121665374071032973>comment</span> for it.</p>
+<p>Basic Text Block. Here is <i>italic</i> text. Here is <b>bold</b> text. Here is a both <b><i>bold and italic</i></b> text. Here is a <s>strikethrough</s>. Here is an <u>underline</u>. Here is <em>emphasis</em>. Here is a <a href="https://www.example.com">link</a>. Here is a monospace text <code>monospace</code>. Here is a <span class="red-text"> red text </span>. Here is a <span class="red-highlight"> red highlighted </span> text. This text has a <span class="comment" data-target=14121665374071032973>comment</span> for it.</p>
 
-    <p>This is all the accepted colors: <span style="color: red"> red </span> <span style="color: green"> green </span>
-        <span style="color: teal"> teal </span><span style="color: orange"> orange </span></p>
-    <p>This is all the accepted highlights: <span style="background-color: red"> red </span><span
-            style="background-color: green"> green </span> <span style="background-color: yellow"> yellow </span> <span
-            style="background-color: pink"> pink </span></p>
+<p>This is all the accepted colors: <span class="red-text"> red </span> <span class="green-text"> green </span> <span class="teal-text"> teal </span> <span class="orange-text"> orange </span></p>
+<p>This is all the accepted highlights: <span class="red-highlight"> red </span> <span class="green-highlight"> green </span> <span class="yellow-highlight"> yellow </span> <span class="pink-highlight"> pink </span></p>
 
 
 
-    <h2>Here is a horizontal rule:</h2>
-    <hr>
+<h2>Here is a horizontal rule:</h2>
+<hr>
 
-    <h2>Here is a blockquote:</h2>
-    <blockquote>To be or not to be, that is the question.</blockquote>
+<h2>Here is a blockquote:</h2>
+<blockquote>To be or not to be, that is the question.</blockquote>
 
-    <h2>Here is a Hint</h2>
-    <p>{hint}</p>
+<h2>Here is a Hint</h2>
+<p>{hint}</p>
 
-    <h2>Here is a spoiler</h2>
-    <p><span class="spoiler"> I am your father </span></p>
+<h2>Here is a spoiler</h2>
+<p><span class="spoiler"> I am your father </span></p>
 
-    <h2>Here is a list:</h2>
-    <p>- item 1</p>
-    <p>- item 2</p>
-    <p> - subitem 1</p>
-    <p> - subitem 2</p>
-    <p>- item 3</p>
+<h2>Here is a list:</h2>
+<p>- item 1</p>
+<p>- item 2</p>
+<p>    - subitem 1</p>
+<p>    - subitem 2</p>
+<p>- item 3</p>
 
-    <h2>Here is a numbered list:</h2>
-    <p>1. item 1</p>
-    <p>2. item 2</p>
+<h2>Here is a numbered list:</h2>
+<p>1. item 1</p>
+<p>2. item 2</p>
 
-    <h2>Here is a image:</h2>
-    <img src="source" alt="alt" height="height" width="width">
+<h2>Here is a image:</h2>
+<img src="source" alt="alt" height="height" width="width">
 
-    <h2>Here is a table:</h2>
-    <p>
-        <csv+,>
-    </p>
-    <p>header1 , header2 , header3</p>
-    <p>row1 , cell2 , cell3</p>
-    <p>row2 , cell2 , cell3</p>
-    <p>
-        </csv+,>
-    </p>
+<h2>Here is a table:</h2>
+<p><csv+,></p>
+<p>header1 , header2 , header3</p>
+<p>row1 , cell2 , cell3</p>
+<p>row2 , cell2 , cell3</p>
+<p></csv+,></p>
 
-    <h2>Here is a code block:</h2>
-    <p><code></code>`python</p>
-    <p>def hello():</p>
-    <p> print("Hello, World!")</p>
-    <p><code></code>`</p>
+<h2>Here is a code block:</h2>
+<p><code></code>`python</p>
+<p>def hello():</p>
+<p>    print("Hello, World!")</p>
+<p><code></code>`</p>
 
-    <h2>Now for Math Equations</h2>
+<h2>Now for Math Equations</h2>
 
-    <p>Many times we need inline math equations like this \(x^2 + y^2 = z^2\). Other times we need block math equations
-        like this:</p>
-    <p>\[ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} \]</p>
+<p>Many times we need inline math equations like this \(x^2 + y^2 = z^2\). Other times we need block math equations like this:</p>
+<p>\[ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} \]</p>
 
-    <h2>Finally all the extra Stuff:</h2>
+<h2>Finally all the extra Stuff:</h2>
 
-    <p>Here is all the escaped characters: # * - [ ] ( ) { } ! ` > | &lt; > ~ $ ?</p>
+<p>Here is all the escaped characters: # * - [ ] ( ) { } ! ` > | &lt; > ~ $ ?</p>
 
-    <span class="comment_explain"><span id=14121665374071032973>This comment explains the text</span></span>
+<span class="comment_explain"><span id=14121665374071032973 class="hidden">This comment explains the text</span></span>
 
+</div>
 </body>
 
 </html>
