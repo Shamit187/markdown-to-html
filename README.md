@@ -35,8 +35,8 @@
 * Image: ![alt][height](link\)
 * Table: | item1 | item2 | item3 |
 * Code: ```language
-* Inline equation: $equation\$
-* Block equation: $$equation\$\$
+* Inline equation: \$equation\$
+* Block equation: \$\$equation\$\$
 * Escape Characters: #*-[](){}!`|<>~$?
 
 ## Usage
