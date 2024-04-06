@@ -11,7 +11,7 @@ enum LineToken {
     Heading2(String),
     Heading3(String),
     Paragraph(String),
-    // List(String),
+    List(ListItem),
     /*
         Idea for list (and CodeBlock):
         1. line_tokenizer returns list token
@@ -39,36 +39,10 @@ struct Comment {
     reference: String,
 }
 
-// struct Color {
-//     r: u8,
-//     g: u8,
-//     b: u8,
-// }
-
-// enum InlineToken {
-//     // line tokens where inline token should be used
-//     // Paragraph, List, Quote
-//     Plain(String),
-//     Bold(String),
-//     Italic(String),
-//     BoldItalic(String),
-//     Strikethrough(String),
-//     Underline(String),
-//     Emphasis(String),
-//     Link(String, String),
-//     Code(String),
-//     Spoiler(String),
-//     Comment(String, String),
-//     // comment, citation, footnote reference needs a static storage, where everything will accumulate and then added after everything
-//     Color(String, Color),
-//     Highlight(String, Color),
-//     // InlineEquation(String),
-//     // BlockEquation(String),
-//     // Superscript(String, String),
-//     // Subscript(String, String),
-//     // Citation(String),
-//     // FootnoteReference(String),
-// }
+struct ListItem {
+    text: String,
+    level: usize,
+}
 
 fn start() {
     let markdown = fs::read_to_string(INPUT).expect("Error reading file");
@@ -103,10 +77,19 @@ fn line_tokenizer(line: &str) -> LineToken {
             "height".to_string(),
             "width".to_string(),
         )
+    } else if line.starts_with("- ") {
+        let mut indentation_count = 0;
+        for c in line.chars() {
+            if c == '-' {
+                indentation_count += 1;
+            }
+        }
+        indentation_count -= 1;
+        LineToken::List(ListItem {
+            text: line.trim().to_string().replace("- ", ""),
+            level: indentation_count,
+        })
     }
-    // else if line.starts_with("- ") {
-    // process list
-    // }
     // else if line.starts_with("```") {
     // process code block
     // }
@@ -299,6 +282,21 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
             )
         }
         LineToken::Empty => "".to_string(),
+        LineToken::List(list_item) => {
+            let symbol = match list_item.level % 3 {
+                0 => "•",
+                1 => "◦",
+                2 => "▪",
+                _ => "",
+            };
+            format!(
+                "<div class=\"list_item pl-{} indent-{}\">{} {}</div>",
+                list_item.level * 4,
+                list_item.level,
+                symbol,
+                list_item.text
+            )
+        }
     }
 }
 
@@ -369,10 +367,10 @@ static HTML_HEAD: &str = r#"
                 @apply bg-gray-100 dark:bg-gray-800 p-2 m-2 rounded shadow;
             }
             .block_quote {
-                @apply bg-gray-200 dark:bg-gray-700 p-2 m-2 rounded shadow;
+                @apply bg-gray-200 dark:bg-gray-700 p-2 rounded shadow;
             }
             .spoiler {
-                @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700 p-2 m-2 rounded shadow transition duration-500 ease-in-out;
+                @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700 p-2 rounded shadow transition duration-500 ease-in-out;
             }
             .spoiler.revealed {
                 @apply bg-transparent text-gray-900 dark:text-gray-200; /* Change background and text color */
@@ -450,6 +448,14 @@ static HTML_TAIL: &str = r#"
 </html>
 "#;
 
+#[derive(PartialEq, Eq)]
+enum MultiLineState {
+    List,
+    // CodeBlock,
+    // Table,
+    None,
+}
+
 fn markdown_to_html(markdown: String) -> String {
     let mut html = String::new();
 
@@ -458,9 +464,41 @@ fn markdown_to_html(markdown: String) -> String {
     // static storage of vectors of strings for comments
     let mut comments: Vec<String> = Vec::new();
 
+    // switch states
+    let mut state = MultiLineState::None;
+
     for line in markdown.lines() {
         // tokenize line
         let line_token = line_tokenizer(line);
+
+        let new_state = match line_token {
+            LineToken::List(_) => MultiLineState::List,
+            // LineToken::CodeBlock(_) => MultiLineState::CodeBlock,
+            // LineToken::Table(_) => MultiLineState::Table,
+            _ => MultiLineState::None,
+        };
+
+        // if state swithces, add a newline
+        if state != new_state {
+            /*
+                New State Fix
+            */
+
+            // if new state is List, add a <div class="list"> tag
+            if new_state == MultiLineState::List {
+                html.push_str("<div class=\"list\">\n");
+            }
+
+            /*
+                Previous State Fix
+            */
+
+            // if prev state is List, add a </div> tag
+            if state == MultiLineState::List {
+                html.push_str("</div>\n");
+            }
+        }
+        state = new_state;
 
         // convert token to html
         let line_html = token_to_html(line_token, &mut comments);

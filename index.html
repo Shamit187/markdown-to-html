@@ -65,10 +65,10 @@
                 @apply bg-gray-100 dark:bg-gray-800 p-2 m-2 rounded shadow;
             }
             .block_quote {
-                @apply bg-gray-200 dark:bg-gray-700 p-2 m-2 rounded shadow;
+                @apply bg-gray-200 dark:bg-gray-700 p-2 rounded shadow;
             }
             .spoiler {
-                @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700 p-2 m-2 rounded shadow transition duration-500 ease-in-out;
+                @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700 p-2 rounded shadow transition duration-500 ease-in-out;
             }
             .spoiler.revealed {
                 @apply bg-transparent text-gray-900 dark:text-gray-200; /* Change background and text color */
@@ -90,7 +90,7 @@
                     // Toggle the 'revealed' class when clicked
                     this.classList.toggle('revealed');
                 });
-            }); 
+            });
         });
         document.addEventListener('DOMContentLoaded', function () {
             const comments = document.querySelectorAll('.comment');
@@ -161,11 +161,13 @@
 <p><span class="spoiler"> I am your father </span></p>
 
 <h2>Here is a list:</h2>
-<p>- item 1</p>
-<p>- item 2</p>
-<p>    - subitem 1</p>
-<p>    - subitem 2</p>
-<p>- item 3</p>
+<div class="list">
+<div class="list_item pl-0 indent-0">• item 1</div>
+<div class="list_item pl-0 indent-0">• item 2</div>
+<div class="list_item pl-4 indent-1">◦ subitem 1</div>
+<div class="list_item pl-4 indent-1">◦ subitem 2</div>
+<div class="list_item pl-0 indent-0">• item 3</div>
+</div>
 
 <h2>Here is a numbered list:</h2>
 <p>1. item 1</p>

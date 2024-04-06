@@ -24,8 +24,8 @@ This is all the accepted highlights: <!red> red </!red> <!green> green </!green>
 ## Here is a list:
 - item 1
 - item 2
-    - subitem 1
-    - subitem 2
+- - subitem 1
+- - subitem 2
 - item 3
 
 ## Here is a numbered list:
