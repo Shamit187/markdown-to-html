@@ -6,6 +6,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        module.exports = {
+          plugins: [
+            require('tailwindcss')({
+              // other settings
+            }),
+            require('autoprefixer'),
+          ]
+        }
+      </script>
     <style type="text/tailwindcss">
         @layer components {
             @media (prefers-color-scheme: dark) {
@@ -17,6 +27,8 @@
         @layer utilities {
             body {
                 @apply bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-200;
+                @apply font-sans antialiased;
+                @apply text-sm md:text-base;
             }
             .spoiler {
                 @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700;
@@ -63,9 +75,14 @@
             a {
                 @apply text-blue-500 dark:text-blue-300 hover:underline; 
             }
+            .comment:hover {
+                @apply cursor-pointer;
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* White shadow */
+            }
             .comment_explain {
                 @apply fixed top-1/2 left-1/2 transform -translate-x-1/2;
-                @apply bg-gray-100 dark:bg-gray-800 p-2 m-2 rounded shadow;
+                @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow;
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Black shadow */
             }
             .block_quote {
                 @apply bg-gray-200 dark:bg-gray-700 p-2 rounded shadow;
@@ -174,7 +191,7 @@
 <body>
 <div class="flex w-full">
 <div class="w-1/4 hidden md:block"></div>
-<div class="w-full md:w-1/2 flex-col space-y-6 pt-10 px-4 md:px-2">
+<div class="w-full md:w-1/2 flex-col space-y-6 p-10 px-4 md:px-2">
 <h1>Title</h1>
 
 <div class="author">Shamit <br> April 6, 2021</div>
@@ -213,7 +230,7 @@
 
 <div><h2>Here is a image</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
-<img src="source" alt="alt" height="height" width="width">
+<div class="flex flex-col justify-center items-center"><img src="https://i.ibb.co/wdzL2Lg/71nk3r-OK3j-L-SL1500.jpg" alt="Book Image" style="height: 800px; width: auto;"><div class="text-sm"><em>Book Image</em></div></div>
 
 <div><h2>Here is a table</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 

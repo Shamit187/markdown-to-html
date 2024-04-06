@@ -19,7 +19,7 @@ enum LineToken {
     */
     Quote(String),
     HorizontalRule,
-    Image(String, String, String, String),
+    Image(String, String, String),
     Table(String),
     Empty,
 }
@@ -63,13 +63,27 @@ fn line_tokenizer(line: &str) -> LineToken {
     } else if line.starts_with("---") {
         LineToken::HorizontalRule
     } else if line.starts_with("![") {
-        // need to modifiy this one
-        LineToken::Image(
-            "source".to_string(),
-            "alt".to_string(),
-            "height".to_string(),
-            "width".to_string(),
-        )
+        // first trim off the leading "!"
+        let line = line[1..].to_string();
+        let parts: Vec<&str> = line
+            .split(|c| c == '[' || c == ']' || c == '(' || c == ')')
+            .filter(|s| !s.is_empty())
+            .collect();
+
+        // Ensure we have at least the minimum required parts
+        if parts.len() >= 3 {
+            let alt = parts[0].to_string(); // First part is the alt text
+            let height = parts[1].to_string(); // Second part is the height
+            let source = parts[2].to_string(); // Last part is the image source
+
+            LineToken::Image(source, alt, height)
+        } else {
+            LineToken::Image(
+                "source".to_string(),
+                "alt".to_string(),
+                "height".to_string(),
+            )
+        }
     } else if line.starts_with("- ") {
         let mut indentation_count = 0;
         for c in line.chars() {
@@ -277,10 +291,10 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
             format!("<div class=\"block_quote\"> 💬 {}</div>", text)
         }
         LineToken::HorizontalRule => "<hr>".to_string(),
-        LineToken::Image(source, alt, height, width) => {
+        LineToken::Image(source, alt, height) => {
             format!(
-                "<img src=\"{}\" alt=\"{}\" height=\"{}\" width=\"{}\">",
-                source, alt, height, width
+                "<div class=\"flex flex-col justify-center items-center\"><img src=\"{}\" alt=\"{}\" style=\"height: {}; width: auto;\"><div class=\"text-sm\"><em>{}</em></div></div>",
+                source, alt, height, alt
             )
         }
         LineToken::Empty => "".to_string(),
@@ -329,6 +343,16 @@ static HTML_HEAD: &str = r#"
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        module.exports = {
+          plugins: [
+            require('tailwindcss')({
+              // other settings
+            }),
+            require('autoprefixer'),
+          ]
+        }
+      </script>
     <style type="text/tailwindcss">
         @layer components {
             @media (prefers-color-scheme: dark) {
@@ -340,6 +364,8 @@ static HTML_HEAD: &str = r#"
         @layer utilities {
             body {
                 @apply bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-200;
+                @apply font-sans antialiased;
+                @apply text-sm md:text-base;
             }
             .spoiler {
                 @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700;
@@ -386,9 +412,14 @@ static HTML_HEAD: &str = r#"
             a {
                 @apply text-blue-500 dark:text-blue-300 hover:underline; 
             }
+            .comment:hover {
+                @apply cursor-pointer;
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* White shadow */
+            }
             .comment_explain {
                 @apply fixed top-1/2 left-1/2 transform -translate-x-1/2;
-                @apply bg-gray-100 dark:bg-gray-800 p-2 m-2 rounded shadow;
+                @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow;
+                box-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Black shadow */
             }
             .block_quote {
                 @apply bg-gray-200 dark:bg-gray-700 p-2 rounded shadow;
@@ -497,7 +528,7 @@ static HTML_HEAD: &str = r#"
 <body>
 <div class="flex w-full">
 <div class="w-1/4 hidden md:block"></div>
-<div class="w-full md:w-1/2 flex-col space-y-6 pt-10 px-4 md:px-2">
+<div class="w-full md:w-1/2 flex-col space-y-6 p-10 px-4 md:px-2">
 "#;
 
 static HTML_TAIL: &str = r#"
@@ -561,6 +592,23 @@ fn markdown_to_html(markdown: String) -> String {
                 ));
             }
 
+            /*
+                Previous State Fix
+            */
+
+            // if prev state is List, add a </div> tag
+            if state == MultiLineState::List {
+                html.push_str("</div>\n");
+            }
+
+            // if prev state is Table, add a </div> tag
+            if state == MultiLineState::Table {
+                html.push_str("</div>\n");
+            }
+
+            /*
+                Code Block Fix
+            */
             if new_state == MultiLineState::CodeBlock {
                 if is_code_block {
                     html.push_str("</code></pre>\n");
@@ -575,40 +623,26 @@ fn markdown_to_html(markdown: String) -> String {
                     continue;
                 }
             }
-
-            /*
-                Previous State Fix
-            */
-
-            // if prev state is List, add a </div> tag
-            if state == MultiLineState::List {
-                html.push_str("</div>\n");
-            }
-
-            // if prev state is Table, add a </div> tag
-            if state == MultiLineState::Table {
-                html.push_str("</div>\n");
-            }
         }
         state = new_state;
 
         // convert token to html
         let line_html = token_to_html(line_token, &mut comments);
 
-        // add a newline for good luck
-        // remove this line in final version
-        if !is_code_block {
-            let line_html = format!("{}\n", line_html);
-
-            // append to html
-            html.push_str(&line_html);
-        } else {
+        // if we have a code block, we'll have a weird logic, sorry for that
+        if is_code_block {
             // if code block, add the line as it is
             // just change < to &lt; and > to &gt;
             let line = line.replace("<", "&lt;");
             let line = line.replace(">", "&gt;");
             html.push_str(format!("{}\n", line).as_str());
+            continue;
         }
+
+        let line_html = format!("{}\n", line_html);
+
+        // append to html
+        html.push_str(&line_html);
     }
 
     // add comments

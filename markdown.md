@@ -34,7 +34,7 @@ This is all the accepted colors: <red> red </red> <green> green </green> <teal> 
 
 ## Here is a image
 
-![image][width][height](https://www.example.com/image.jpg)
+![Book Image][800px](https://i.ibb.co/wdzL2Lg/71nk3r-OK3j-L-SL1500.jpg)
 
 ## Here is a table
 
