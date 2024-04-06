@@ -8,8 +8,7 @@ Basic Text Block. Here is *italic* text. Here is **bold** text. Here is a both *
 
 ### Subchapter
 
-This is all the accepted colors: <red> red </red> <green> green </green> <teal> teal </teal> <orange> orange </orange>
-This is all the accepted highlights: <!red> red </!red> <!green> green </!green> <!yellow> yellow </!yellow> <!pink> pink </!pink>
+This is all the accepted colors: <red> red </red> <green> green </green> <teal> teal </teal> <orange> orange </orange> <br>This is all the accepted highlights: <!red> red </!red> <!green> green </!green> <!yellow> yellow </!yellow> <!pink> pink </!pink>
 
 ! This is a comment, ignore this
 
@@ -45,9 +44,13 @@ This is all the accepted highlights: <!red> red </!red> <!green> green </!green>
 
 ## Here is a code block
 
-```python
-def hello():
-    print("Hello, World!")
+```c
+#include <stdio.h>
+
+int main() {
+    printf("Hello, World!");
+    return 0;
+}
 ```
 
 ## Now for Math Equations

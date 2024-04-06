@@ -91,15 +91,17 @@ Normal text
 
 ```code block```
 ?
-<pre><code>
-    #include <iostream>
-    using namespace std;
-
-    int main() {
-        cout << "Hello, World!";
-        return 0;
-    }
-</code></pre>
+```python
+def hello_world():
+    print("Hello, World!")
+```
+to
+<pre class="block_code python">
+<code><!--
+-->def hello_world():
+    print("Hello, World!")<!--
+--></code>
+</pre>
 later use prism.js to highlight code
 
 

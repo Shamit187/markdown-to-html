@@ -13,7 +13,7 @@ enum LineToken {
     Author(String),
     Paragraph(String),
     List(ListItem),
-    // CodeBlock(String),
+    CodeBlock(String),
     /*
         later use prism.js to highlight code
     */
@@ -85,11 +85,9 @@ fn line_tokenizer(line: &str) -> LineToken {
     } else if line.starts_with("|") {
         // process table
         LineToken::Table(line.to_string())
-    }
-    // else if line.starts_with("```") {
-    // process code block
-    // }
-    else if line.starts_with("!") {
+    } else if line.starts_with("```") {
+        LineToken::CodeBlock(line[3..].to_string())
+    } else if line.starts_with("!") {
         LineToken::Empty
     } else {
         LineToken::Paragraph(line.to_string())
@@ -152,7 +150,9 @@ fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String 
 
     // substitute `text` with <code> text </code>
     let code_regex = Regex::new(r"`(.*?)`").unwrap();
-    let text = code_regex.replace_all(&text, "<span class=\"monospace\">$1</span>").to_string();
+    let text = code_regex
+        .replace_all(&text, "<span class=\"monospace\">$1</span>")
+        .to_string();
 
     // subsitute <red>text</red> with <span class="red-text"> text </span>
     // subsitute <teal>text</teal> with <span class="teal-text"> text </span>
@@ -257,7 +257,10 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
             format!("<h1>{}</h1>", text)
         }
         LineToken::Heading2(text) => {
-            format!("<h2>{}</h2>", text)
+            format!(
+                "<div><h2>{}</h2><hr class=\"h-px bg-gray-200 border-0 dark:bg-gray-700\"></div>",
+                text
+            )
         }
         LineToken::Heading3(text) => {
             format!("<h3>{}</h3>", text)
@@ -310,6 +313,10 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
                 table_html.push_str(&format!("<div class=\"table_item\">{}</div>", row));
             }
             table_html
+        }
+        LineToken::CodeBlock(text) => {
+            // return empty string for now
+            text
         }
     }
 }
@@ -403,6 +410,9 @@ static HTML_HEAD: &str = r#"
             }
             .table_item {
                 @apply border border-gray-300 dark:border-gray-700 p-2;
+            }
+            .block_code {
+                @apply bg-gray-200 dark:bg-gray-700 p-4 rounded shadow;
             }
             /* WebKit */
             ::-webkit-scrollbar {
@@ -502,13 +512,14 @@ static HTML_TAIL: &str = r#"
 #[derive(PartialEq, Eq)]
 enum MultiLineState {
     List,
-    // CodeBlock,
+    CodeBlock,
     Table,
     None,
 }
 
 fn markdown_to_html(markdown: String) -> String {
     let mut html = String::new();
+    let mut is_code_block = false;
 
     html.push_str(HTML_HEAD);
 
@@ -524,7 +535,7 @@ fn markdown_to_html(markdown: String) -> String {
 
         let new_state = match line_token {
             LineToken::List(_) => MultiLineState::List,
-            // LineToken::CodeBlock(_) => MultiLineState::CodeBlock,
+            LineToken::CodeBlock(_) => MultiLineState::CodeBlock,
             LineToken::Table(_) => MultiLineState::Table,
             _ => MultiLineState::None,
         };
@@ -550,6 +561,21 @@ fn markdown_to_html(markdown: String) -> String {
                 ));
             }
 
+            if new_state == MultiLineState::CodeBlock {
+                if is_code_block {
+                    html.push_str("</code></pre>\n");
+                    is_code_block = false;
+                    continue;
+                } else {
+                    let language = token_to_html(line_token, &mut comments);
+                    html.push_str(
+                        format!("<pre class=\"block_code {}\"><code>", language).as_str(),
+                    );
+                    is_code_block = true;
+                    continue;
+                }
+            }
+
             /*
                 Previous State Fix
             */
@@ -571,10 +597,18 @@ fn markdown_to_html(markdown: String) -> String {
 
         // add a newline for good luck
         // remove this line in final version
-        let line_html = format!("{}\n", line_html);
+        if !is_code_block {
+            let line_html = format!("{}\n", line_html);
 
-        // append to html
-        html.push_str(&line_html);
+            // append to html
+            html.push_str(&line_html);
+        } else {
+            // if code block, add the line as it is
+            // just change < to &lt; and > to &gt;
+            let line = line.replace("<", "&lt;");
+            let line = line.replace(">", "&gt;");
+            html.push_str(format!("{}\n", line).as_str());
+        }
     }
 
     // add comments

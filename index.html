@@ -88,6 +88,9 @@
             .table_item {
                 @apply border border-gray-300 dark:border-gray-700 p-2;
             }
+            .block_code {
+                @apply bg-gray-200 dark:bg-gray-700 p-4 rounded shadow;
+            }
             /* WebKit */
             ::-webkit-scrollbar {
             width: 0px;
@@ -176,30 +179,29 @@
 
 <div class="author">Shamit <br> April 6, 2021</div>
 
-<h2>Chapter</h2>
+<div><h2>Chapter</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
 <p>Basic Text Block. Here is <i>italic</i> text. Here is <b>bold</b> text. Here is a both <b><i>bold and italic</i></b> text. Here is a <s>strikethrough</s>. Here is an <u>underline</u>. Here is <em>emphasis</em>. Here is a <a href="https://www.example.com">link</a>. Here is a monospace text <span class="monospace">monospace</span>. Here is a <span class="red-text"> red text </span>. Here is a <span class="red-highlight"> red highlighted </span> text. This text has a <span class="comment" data-target=14121665374071032973>comment</span> for it.</p>
 
 <h3>Subchapter</h3>
 
-<p>This is all the accepted colors: <span class="red-text"> red </span> <span class="green-text"> green </span> <span class="teal-text"> teal </span> <span class="orange-text"> orange </span></p>
-<p>This is all the accepted highlights: <span class="red-highlight"> red </span> <span class="green-highlight"> green </span> <span class="yellow-highlight"> yellow </span> <span class="pink-highlight"> pink </span></p>
+<p>This is all the accepted colors: <span class="red-text"> red </span> <span class="green-text"> green </span> <span class="teal-text"> teal </span> <span class="orange-text"> orange </span> <br>This is all the accepted highlights: <span class="red-highlight"> red </span> <span class="green-highlight"> green </span> <span class="yellow-highlight"> yellow </span> <span class="pink-highlight"> pink </span></p>
 
 
 
-<h2>Here is a horizontal rule</h2>
+<div><h2>Here is a horizontal rule</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
 <hr>
 
-<h2>Here is a blockquote</h2>
+<div><h2>Here is a blockquote</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
 <div class="block_quote"> 💬 To be or not to be, that is the question.</div>
 
-<h2>Here is a spoiler</h2>
+<div><h2>Here is a spoiler</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
 <p><span class="spoiler"> I am your father </span></p>
 
-<h2>Here is a list</h2>
+<div><h2>Here is a list</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
 <div class="list">
 <div class="list_item pl-0 indent-0">• item 1</div>
@@ -209,11 +211,11 @@
 <div class="list_item pl-0 indent-0">• item 3</div>
 </div>
 
-<h2>Here is a image</h2>
+<div><h2>Here is a image</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
 <img src="source" alt="alt" height="height" width="width">
 
-<h2>Here is a table</h2>
+<div><h2>Here is a table</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
 <div class="table grid grid-cols-3">
 <div class="table_item"><b>header1</b></div><div class="table_item"><b>header2</b></div><div class="table_item"><b>header3</b></div>
@@ -221,19 +223,22 @@
 <div class="table_item">row2</div><div class="table_item">cell2</div><div class="table_item">cell3</div>
 </div>
 
-<h2>Here is a code block</h2>
+<div><h2>Here is a code block</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
-<p><span class="monospace"></span>`python</p>
-<p>def hello():</p>
-<p>    print("Hello, World!")</p>
-<p><span class="monospace"></span>`</p>
+<pre class="block_code c"><code>#include &lt;stdio.h&gt;
 
-<h2>Now for Math Equations</h2>
+int main() {
+    printf("Hello, World!");
+    return 0;
+}
+</code></pre>
+
+<div><h2>Now for Math Equations</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
 <p>Many times we need inline math equations like this \(x^2 + y^2 = z^2\). Other times we need block math equations like this:</p>
 <p>\[ x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a} \]</p>
 
-<h2>Finally all the extra Stuff</h2>
+<div><h2>Finally all the extra Stuff</h2><hr class="h-px bg-gray-200 border-0 dark:bg-gray-700"></div>
 
 <p>Here is all the escaped characters: # * - [ ] ( ) { } ! ` > | &lt; > ~ $ ?</p>
 <div id=14121665374071032973 class="comment_explain hidden">This comment explains the text</div>
