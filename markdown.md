@@ -1,12 +1,12 @@
-# heading 1
-!# Shamit
-!# 2021-09-01
+# Title
 
-## heading 2
+!# Shamit <br> April 6, 2021
 
-### heading 3
+## Chapter
 
 Basic Text Block. Here is *italic* text. Here is **bold** text. Here is a both ***bold and italic*** text. Here is a ~~strikethrough~~. Here is an ~underline~. Here is <em>emphasis</em>. Here is a [link](https://www.example.com). Here is a monospace text `monospace`. Here is a <red> red text </red>. Here is a <!red> red highlighted </!red> text. This text has a (comment)(This comment explains the text) for it.
+
+### Subchapter
 
 This is all the accepted colors: <red> red </red> <green> green </green> <teal> teal </teal> <orange> orange </orange>
 This is all the accepted highlights: <!red> red </!red> <!green> green </!green> <!yellow> yellow </!yellow> <!pink> pink </!pink>
@@ -39,7 +39,7 @@ This is all the accepted highlights: <!red> red </!red> <!green> green </!green>
 
 ## Here is a table
 
-| **header1** | *header2* | **header3** |
+| **header1** | **header2** | **header3** |
 | row1 | cell2 | cell3 |
 | row2 | cell2 | cell3 |
 

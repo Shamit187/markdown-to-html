@@ -398,6 +398,12 @@ static HTML_HEAD: &str = r#"
             .monospace {
                 @apply font-mono bg-gray-200 dark:bg-gray-700 p-1 rounded shadow;
             }
+            .table {
+                @apply border  border-gray-300 dark:border-gray-700 m-2 rounded shadow text-center;
+            }
+            .table_item {
+                @apply border border-gray-300 dark:border-gray-700 p-2;
+            }
             /* WebKit */
             ::-webkit-scrollbar {
             width: 0px;
@@ -481,7 +487,7 @@ static HTML_HEAD: &str = r#"
 <body>
 <div class="flex w-full">
 <div class="w-1/4 hidden md:block"></div>
-<div class="w-full md:w-1/2 flex-col space-y-2 py-4 px-4 md:px-2">
+<div class="w-full md:w-1/2 flex-col space-y-6 pt-10 px-4 md:px-2">
 "#;
 
 static HTML_TAIL: &str = r#"
@@ -539,7 +545,7 @@ fn markdown_to_html(markdown: String) -> String {
             if new_state == MultiLineState::Table {
                 let count_columns = line.trim().split("|").filter(|x| !x.is_empty()).count();
                 html.push_str(&format!(
-                    "<div class=\"table grid grid-cols-{} gap-4\">\n",
+                    "<div class=\"table grid grid-cols-{}\">\n",
                     count_columns
                 ));
             }

@@ -82,6 +82,12 @@
             .monospace {
                 @apply font-mono bg-gray-200 dark:bg-gray-700 p-1 rounded shadow;
             }
+            .table {
+                @apply border  border-gray-300 dark:border-gray-700 m-2 rounded shadow text-center;
+            }
+            .table_item {
+                @apply border border-gray-300 dark:border-gray-700 p-2;
+            }
             /* WebKit */
             ::-webkit-scrollbar {
             width: 0px;
@@ -165,16 +171,16 @@
 <body>
 <div class="flex w-full">
 <div class="w-1/4 hidden md:block"></div>
-<div class="w-full md:w-1/2 flex-col space-y-2 py-4 px-4 md:px-2">
-<h1>heading 1</h1>
-<div class="author">Shamit</div>
-<div class="author">2021-09-01</div>
+<div class="w-full md:w-1/2 flex-col space-y-6 pt-10 px-4 md:px-2">
+<h1>Title</h1>
 
-<h2>heading 2</h2>
+<div class="author">Shamit <br> April 6, 2021</div>
 
-<h3>heading 3</h3>
+<h2>Chapter</h2>
 
 <p>Basic Text Block. Here is <i>italic</i> text. Here is <b>bold</b> text. Here is a both <b><i>bold and italic</i></b> text. Here is a <s>strikethrough</s>. Here is an <u>underline</u>. Here is <em>emphasis</em>. Here is a <a href="https://www.example.com">link</a>. Here is a monospace text <span class="monospace">monospace</span>. Here is a <span class="red-text"> red text </span>. Here is a <span class="red-highlight"> red highlighted </span> text. This text has a <span class="comment" data-target=14121665374071032973>comment</span> for it.</p>
+
+<h3>Subchapter</h3>
 
 <p>This is all the accepted colors: <span class="red-text"> red </span> <span class="green-text"> green </span> <span class="teal-text"> teal </span> <span class="orange-text"> orange </span></p>
 <p>This is all the accepted highlights: <span class="red-highlight"> red </span> <span class="green-highlight"> green </span> <span class="yellow-highlight"> yellow </span> <span class="pink-highlight"> pink </span></p>
@@ -209,8 +215,8 @@
 
 <h2>Here is a table</h2>
 
-<div class="table grid grid-cols-3 gap-4">
-<div class="table_item"><b>header1</b></div><div class="table_item"><i>header2</i></div><div class="table_item"><b>header3</b></div>
+<div class="table grid grid-cols-3">
+<div class="table_item"><b>header1</b></div><div class="table_item"><b>header2</b></div><div class="table_item"><b>header3</b></div>
 <div class="table_item">row1</div><div class="table_item">cell2</div><div class="table_item">cell3</div>
 <div class="table_item">row2</div><div class="table_item">cell2</div><div class="table_item">cell3</div>
 </div>
