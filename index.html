@@ -1,26 +1,11 @@
 
 <!doctype html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        clifford: '#da373d',
-                    }
-                }
-            }
-        }
-    </script>
-    <script>
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-        }
-    </script>
     <style type="text/tailwindcss">
         @layer components {
             @media (prefers-color-scheme: dark) {
@@ -44,15 +29,6 @@
             }
             h3 {
                 @apply text-2xl font-bold py-1;
-            }
-            h4 {
-                @apply text-xl font-bold;
-            }
-            h5 {
-                @apply text-lg font-bold;
-            }
-            h6 {
-                @apply text-base font-bold;
             }
             .red-text {
                 @apply text-red-500 dark:text-red-300;
@@ -81,6 +57,25 @@
             .hidden {
                 display: none;
             }
+            a {
+                @apply text-blue-500 dark:text-blue-300 hover:underline; 
+            }
+            .comment_explain {
+                @apply fixed top-1/2 left-1/2 transform -translate-x-1/2;
+                @apply bg-gray-100 dark:bg-gray-800 p-2 m-2 rounded shadow;
+            }
+            .block_quote {
+                @apply bg-gray-200 dark:bg-gray-700 p-2 m-2 rounded shadow;
+            }
+            .spoiler {
+                @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700 p-2 m-2 rounded shadow transition duration-500 ease-in-out;
+            }
+            .spoiler.revealed {
+                @apply bg-transparent text-gray-900 dark:text-gray-200; /* Change background and text color */
+            }
+            .spoiler:hover {
+                @apply cursor-pointer;
+            }
         }   
     </style>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
@@ -88,16 +83,49 @@
     <link rel="stylesheet" href="styles.css">
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const spoilers = document.querySelectorAll('.spoiler');
+
+            spoilers.forEach(spoiler => {
+                spoiler.addEventListener('click', function() {
+                    // Toggle the 'revealed' class when clicked
+                    this.classList.toggle('revealed');
+                });
+            }); 
+        });
+        document.addEventListener('DOMContentLoaded', function () {
             const comments = document.querySelectorAll('.comment');
-            
+            const commentExplain = document.querySelector('.comment_explain');
+
             comments.forEach(comment => {
-                comment.addEventListener('mouseover', function() {
+                comment.addEventListener('mouseover', function (event) {
+                    const x = event.clientX;
+                    const y = event.clientY;
+
+                    // Subtract width and height of tooltip to start from cursor corner
+                    const commentExplainWidth = commentExplain.offsetWidth;
+                    const commentExplainHeight = commentExplain.offsetHeight;
+                    const adjustedX = x - commentExplainWidth;
+                    const adjustedY = y - commentExplainHeight;
+
+                    // Adjust position if too close to the right edge
+                    const windowWidth = window.innerWidth;
+                    const maxRight = windowWidth - commentExplainWidth - 10; // 10px buffer
+                    const finalX = adjustedX > maxRight ? maxRight : adjustedX;
+
+                    // Adjust position if too close to the bottom edge
+                    const windowHeight = window.innerHeight;
+                    const maxBottom = windowHeight - commentExplainHeight - 10; // 10px buffer
+                    const finalY = adjustedY > maxBottom ? maxBottom : adjustedY;
+
+                    commentExplain.style.left = `${finalX}px`;
+                    commentExplain.style.top = `${finalY}px`;
+
                     const targetId = this.getAttribute('data-target');
                     const targetElement = document.getElementById(targetId);
                     targetElement.classList.remove('hidden');
                 });
 
-                comment.addEventListener('mouseout', function() {
+                comment.addEventListener('mouseout', function () {
                     const targetId = this.getAttribute('data-target');
                     const targetElement = document.getElementById(targetId);
                     targetElement.classList.add('hidden');
@@ -108,13 +136,10 @@
 </head>
 
 <body>
-<div class="py-10 px-20  flex-col space-y-2 w-100%">
-<h1 onclick="toggleDarkMode()">heading 1</h1>
+    <div class="py-10 px-20  flex-col space-y-2 w-100%">
+<h1>heading 1</h1>
 <h2>heading 2</h2>
 <h3>heading 3</h3>
-<h4>heading 4</h4>
-<h5>heading 5</h5>
-<h6>heading 6</h6>
 
 <p>Basic Text Block. Here is <i>italic</i> text. Here is <b>bold</b> text. Here is a both <b><i>bold and italic</i></b> text. Here is a <s>strikethrough</s>. Here is an <u>underline</u>. Here is <em>emphasis</em>. Here is a <a href="https://www.example.com">link</a>. Here is a monospace text <code>monospace</code>. Here is a <span class="red-text"> red text </span>. Here is a <span class="red-highlight"> red highlighted </span> text. This text has a <span class="comment" data-target=14121665374071032973>comment</span> for it.</p>
 
@@ -127,7 +152,7 @@
 <hr>
 
 <h2>Here is a blockquote:</h2>
-<blockquote>To be or not to be, that is the question.</blockquote>
+<div class="block_quote"> 💬 To be or not to be, that is the question.</div>
 
 <h2>Here is a Hint</h2>
 <p>{hint}</p>
@@ -171,7 +196,7 @@
 
 <p>Here is all the escaped characters: # * - [ ] ( ) { } ! ` > | &lt; > ~ $ ?</p>
 
-<span class="comment_explain"><span id=14121665374071032973 class="hidden">This comment explains the text</span></span>
+<div id=14121665374071032973 class="comment_explain hidden">This comment explains the text</div>
 
 </div>
 </body>

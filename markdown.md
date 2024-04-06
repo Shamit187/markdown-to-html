@@ -1,9 +1,6 @@
 # heading 1
 ## heading 2
 ### heading 3
-#### heading 4
-##### heading 5
-###### heading 6
 
 Basic Text Block. Here is *italic* text. Here is **bold** text. Here is a both ***bold and italic*** text. Here is a ~~strikethrough~~. Here is an ~underline~. Here is <em>emphasis</em>. Here is a [link](https://www.example.com). Here is a monospace text `monospace`. Here is a <red> red text </red>. Here is a <!red> red highlighted </!red> text. This text has a (comment)(This comment explains the text) for it.
 

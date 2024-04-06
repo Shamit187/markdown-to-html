@@ -10,9 +10,6 @@ enum LineToken {
     Heading1(String),
     Heading2(String),
     Heading3(String),
-    Heading4(String),
-    Heading5(String),
-    Heading6(String),
     Paragraph(String),
     // List(String),
     /*
@@ -89,11 +86,11 @@ fn line_tokenizer(line: &str) -> LineToken {
     } else if line.starts_with("### ") {
         LineToken::Heading3(line[4..].to_string())
     } else if line.starts_with("#### ") {
-        LineToken::Heading4(line[5..].to_string())
+        LineToken::Heading3(line[5..].to_string())
     } else if line.starts_with("##### ") {
-        LineToken::Heading5(line[6..].to_string())
+        LineToken::Heading3(line[6..].to_string())
     } else if line.starts_with("###### ") {
-        LineToken::Heading6(line[7..].to_string())
+        LineToken::Heading3(line[7..].to_string())
     } else if line.starts_with("> ") {
         LineToken::Quote(line[2..].to_string())
     } else if line.starts_with("---") {
@@ -129,24 +126,7 @@ fn hash_string_to_integer(input: &str) -> u64 {
 fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String {
     // substitute all escape characters
     /*
-        \#
-        \*
-        \-
-        \[
-        \]
-        \(
-        \)
-        \{
-        \}
-        \!
-        \`
-        \>
-        \|
-        \<
-        \>
-        \~
-        \$
-        \?
+        \#\*\-\[\]\(\)\{\}\!\`\>\|\<\>\~\$\?
     */
     let text = text.replace(r"\#", "\\+hash");
     let text = text.replace(r"\*", "\\+star");
@@ -254,7 +234,10 @@ fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String 
                 "<span class=\"comment\" data-target={}>{}</span>",
                 comment_id, &comment[1]
             ),
-            reference: format!("<span id={} class=\"hidden\">{}</span>", comment_id, &comment[2]),
+            reference: format!(
+                "<div id={} class=\"comment_explain hidden\">{}</div>",
+                comment_id, &comment[2]
+            ),
         });
     }
     // replace all comments
@@ -292,7 +275,7 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
     // static storage: String = String::new();
     match token {
         LineToken::Heading1(text) => {
-            format!("<h1 onclick=\"toggleDarkMode()\">{}</h1>", text)
+            format!("<h1>{}</h1>", text)
         }
         LineToken::Heading2(text) => {
             format!("<h2>{}</h2>", text)
@@ -300,22 +283,13 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
         LineToken::Heading3(text) => {
             format!("<h3>{}</h3>", text)
         }
-        LineToken::Heading4(text) => {
-            format!("<h4>{}</h4>", text)
-        }
-        LineToken::Heading5(text) => {
-            format!("<h5>{}</h5>", text)
-        }
-        LineToken::Heading6(text) => {
-            format!("<h6>{}</h6>", text)
-        }
         LineToken::Paragraph(text) => {
             let text = modifiy_text_with_design(text, comments);
             format!("<p>{}</p>", text)
         }
         LineToken::Quote(text) => {
             let text = modifiy_text_with_design(text, comments);
-            format!("<blockquote>{}</blockquote>", text)
+            format!("<div class=\"block_quote\"> 💬 {}</div>", text)
         }
         LineToken::HorizontalRule => "<hr>".to_string(),
         LineToken::Image(source, alt, height, width) => {
@@ -331,26 +305,11 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
 static HTML_HEAD: &str = r#"
 <!doctype html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        clifford: '#da373d',
-                    }
-                }
-            }
-        }
-    </script>
-    <script>
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-        }
-    </script>
     <style type="text/tailwindcss">
         @layer components {
             @media (prefers-color-scheme: dark) {
@@ -374,15 +333,6 @@ static HTML_HEAD: &str = r#"
             }
             h3 {
                 @apply text-2xl font-bold py-1;
-            }
-            h4 {
-                @apply text-xl font-bold;
-            }
-            h5 {
-                @apply text-lg font-bold;
-            }
-            h6 {
-                @apply text-base font-bold;
             }
             .red-text {
                 @apply text-red-500 dark:text-red-300;
@@ -411,6 +361,25 @@ static HTML_HEAD: &str = r#"
             .hidden {
                 display: none;
             }
+            a {
+                @apply text-blue-500 dark:text-blue-300 hover:underline; 
+            }
+            .comment_explain {
+                @apply fixed top-1/2 left-1/2 transform -translate-x-1/2;
+                @apply bg-gray-100 dark:bg-gray-800 p-2 m-2 rounded shadow;
+            }
+            .block_quote {
+                @apply bg-gray-200 dark:bg-gray-700 p-2 m-2 rounded shadow;
+            }
+            .spoiler {
+                @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700 p-2 m-2 rounded shadow transition duration-500 ease-in-out;
+            }
+            .spoiler.revealed {
+                @apply bg-transparent text-gray-900 dark:text-gray-200; /* Change background and text color */
+            }
+            .spoiler:hover {
+                @apply cursor-pointer;
+            }
         }   
     </style>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
@@ -418,16 +387,49 @@ static HTML_HEAD: &str = r#"
     <link rel="stylesheet" href="styles.css">
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const spoilers = document.querySelectorAll('.spoiler');
+
+            spoilers.forEach(spoiler => {
+                spoiler.addEventListener('click', function() {
+                    // Toggle the 'revealed' class when clicked
+                    this.classList.toggle('revealed');
+                });
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function () {
             const comments = document.querySelectorAll('.comment');
-            
+            const commentExplain = document.querySelector('.comment_explain');
+
             comments.forEach(comment => {
-                comment.addEventListener('mouseover', function() {
+                comment.addEventListener('mouseover', function (event) {
+                    const x = event.clientX;
+                    const y = event.clientY;
+
+                    // Subtract width and height of tooltip to start from cursor corner
+                    const commentExplainWidth = commentExplain.offsetWidth;
+                    const commentExplainHeight = commentExplain.offsetHeight;
+                    const adjustedX = x - commentExplainWidth;
+                    const adjustedY = y - commentExplainHeight;
+
+                    // Adjust position if too close to the right edge
+                    const windowWidth = window.innerWidth;
+                    const maxRight = windowWidth - commentExplainWidth - 10; // 10px buffer
+                    const finalX = adjustedX > maxRight ? maxRight : adjustedX;
+
+                    // Adjust position if too close to the bottom edge
+                    const windowHeight = window.innerHeight;
+                    const maxBottom = windowHeight - commentExplainHeight - 10; // 10px buffer
+                    const finalY = adjustedY > maxBottom ? maxBottom : adjustedY;
+
+                    commentExplain.style.left = `${finalX}px`;
+                    commentExplain.style.top = `${finalY}px`;
+
                     const targetId = this.getAttribute('data-target');
                     const targetElement = document.getElementById(targetId);
                     targetElement.classList.remove('hidden');
                 });
 
-                comment.addEventListener('mouseout', function() {
+                comment.addEventListener('mouseout', function () {
                     const targetId = this.getAttribute('data-target');
                     const targetElement = document.getElementById(targetId);
                     targetElement.classList.add('hidden');
@@ -438,7 +440,7 @@ static HTML_HEAD: &str = r#"
 </head>
 
 <body>
-<div class="py-10 px-20  flex-col space-y-2 w-100%">
+    <div class="py-10 px-20  flex-col space-y-2 w-100%">
 "#;
 
 static HTML_TAIL: &str = r#"
@@ -473,10 +475,7 @@ fn markdown_to_html(markdown: String) -> String {
 
     // add comments
     for comment in comments {
-        html.push_str(&format!(
-            "<span class=\"comment_explain\">{}</span>\n",
-            comment
-        ));
+        html.push_str(&format!("{}\n", comment));
     }
 
     html.push_str(HTML_TAIL);
