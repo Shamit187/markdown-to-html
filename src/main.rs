@@ -10,15 +10,9 @@ enum LineToken {
     Heading1(String),
     Heading2(String),
     Heading3(String),
+    Author(String),
     Paragraph(String),
     List(ListItem),
-    /*
-        Idea for list (and CodeBlock):
-        1. line_tokenizer returns list token
-        2. token_to_html does not return anything, it should have a static storage, where it will store the list item
-        3. if the next token is not a list token, it will return the list along with the other token that was given
-        4. I still don't know how to implement nested list
-    */
     // CodeBlock(String),
     /*
         later use prism.js to highlight code
@@ -26,10 +20,7 @@ enum LineToken {
     Quote(String),
     HorizontalRule,
     Image(String, String, String, String),
-    // Table(Vec<Vec<String>>),
-    /*
-        I have no idea how to add table
-    */
+    Table(String),
     Empty,
 }
 
@@ -65,6 +56,8 @@ fn line_tokenizer(line: &str) -> LineToken {
         LineToken::Heading3(line[6..].to_string())
     } else if line.starts_with("###### ") {
         LineToken::Heading3(line[7..].to_string())
+    } else if line.starts_with("!# ") {
+        LineToken::Author(line[3..].to_string())
     } else if line.starts_with("> ") {
         LineToken::Quote(line[2..].to_string())
     } else if line.starts_with("---") {
@@ -89,6 +82,9 @@ fn line_tokenizer(line: &str) -> LineToken {
             text: line.trim().to_string().replace("- ", ""),
             level: indentation_count,
         })
+    } else if line.starts_with("|") {
+        // process table
+        LineToken::Table(line.to_string())
     }
     // else if line.starts_with("```") {
     // process code block
@@ -266,6 +262,9 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
         LineToken::Heading3(text) => {
             format!("<h3>{}</h3>", text)
         }
+        LineToken::Author(text) => {
+            format!("<div class=\"author\">{}</div>", text)
+        }
         LineToken::Paragraph(text) => {
             let text = modifiy_text_with_design(text, comments);
             format!("<p>{}</p>", text)
@@ -297,6 +296,21 @@ fn token_to_html(token: LineToken, comments: &mut Vec<String>) -> String {
                 list_item.text
             )
         }
+        LineToken::Table(text) => {
+            let parsed_table_row = text
+                .trim()
+                .split("|")
+                .filter(|x| !x.is_empty())
+                .map(|x| x.trim())
+                .map(|x| modifiy_text_with_design(x.to_string(), comments).to_string())
+                .collect::<Vec<String>>();
+
+            let mut table_html = String::new();
+            for row in parsed_table_row {
+                table_html.push_str(&format!("<div class=\"table_item\">{}</div>", row));
+            }
+            table_html
+        }
     }
 }
 
@@ -326,11 +340,14 @@ static HTML_HEAD: &str = r#"
             h1 {
                 @apply text-4xl font-bold text-center py-4;
             }
+            .author{
+                @apply text-center;
+            }
             h2 {
-                @apply text-3xl font-bold py-1;
+                @apply text-3xl font-bold py-2;
             }
             h3 {
-                @apply text-2xl font-bold py-1;
+                @apply text-2xl font-bold py-2;
             }
             .red-text {
                 @apply text-red-500 dark:text-red-300;
@@ -438,10 +455,14 @@ static HTML_HEAD: &str = r#"
 </head>
 
 <body>
-    <div class="py-10 px-20  flex-col space-y-2 w-100%">
+    <div class="flex w-100%">
+    <div class="w-1/4"></div>
+    <div class="w-1/2 flex-col space-y-2 p-2">
 "#;
 
 static HTML_TAIL: &str = r#"
+</div>
+<div class="w-1/4"></div>
 </div>
 </body>
 
@@ -452,7 +473,7 @@ static HTML_TAIL: &str = r#"
 enum MultiLineState {
     List,
     // CodeBlock,
-    // Table,
+    Table,
     None,
 }
 
@@ -474,7 +495,7 @@ fn markdown_to_html(markdown: String) -> String {
         let new_state = match line_token {
             LineToken::List(_) => MultiLineState::List,
             // LineToken::CodeBlock(_) => MultiLineState::CodeBlock,
-            // LineToken::Table(_) => MultiLineState::Table,
+            LineToken::Table(_) => MultiLineState::Table,
             _ => MultiLineState::None,
         };
 
@@ -489,12 +510,27 @@ fn markdown_to_html(markdown: String) -> String {
                 html.push_str("<div class=\"list\">\n");
             }
 
+            // if new state is Table, add a <div class="table grid grid-cols-{} gap-4"> tag
+            // count columns and add grid-cols-{} to the class
+            if new_state == MultiLineState::Table {
+                let count_columns = line.trim().split("|").filter(|x| !x.is_empty()).count();
+                html.push_str(&format!(
+                    "<div class=\"table grid grid-cols-{} gap-4\">\n",
+                    count_columns
+                ));
+            }
+
             /*
                 Previous State Fix
             */
 
             // if prev state is List, add a </div> tag
             if state == MultiLineState::List {
+                html.push_str("</div>\n");
+            }
+
+            // if prev state is Table, add a </div> tag
+            if state == MultiLineState::Table {
                 html.push_str("</div>\n");
             }
         }
