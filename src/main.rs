@@ -152,7 +152,7 @@ fn modifiy_text_with_design(text: String, comments: &mut Vec<String>) -> String 
 
     // substitute `text` with <code> text </code>
     let code_regex = Regex::new(r"`(.*?)`").unwrap();
-    let text = code_regex.replace_all(&text, "<code>$1</code>").to_string();
+    let text = code_regex.replace_all(&text, "<span class=\"monospace\">$1</span>").to_string();
 
     // subsitute <red>text</red> with <span class="red-text"> text </span>
     // subsitute <teal>text</teal> with <span class="teal-text"> text </span>
@@ -338,16 +338,16 @@ static HTML_HEAD: &str = r#"
                 @apply bg-gray-300 dark:bg-gray-700 text-gray-300 dark:text-gray-700;
             }
             h1 {
-                @apply text-4xl font-bold text-center py-4;
+                @apply text-2xl font-bold text-center py-4;
             }
             .author{
-                @apply text-center;
+                @apply text-center text-sm italic;
             }
             h2 {
-                @apply text-3xl font-bold py-2;
+                @apply text-xl font-bold py-4;
             }
             h3 {
-                @apply text-2xl font-bold py-2;
+                @apply text-lg py-4;
             }
             .red-text {
                 @apply text-red-500 dark:text-red-300;
@@ -362,16 +362,16 @@ static HTML_HEAD: &str = r#"
                 @apply text-orange-500 dark:text-orange-300;
             }
             .red-highlight {
-                @apply bg-red-500 bg-opacity-75 rounded;
+                @apply bg-red-500 bg-opacity-75 rounded p-1;
             }
             .green-highlight {
-                @apply bg-green-500 bg-opacity-75 rounded;
+                @apply bg-green-500 bg-opacity-75 rounded p-1;
             }
             .yellow-highlight {
-                @apply bg-yellow-500 bg-opacity-75 rounded;
+                @apply bg-yellow-500 bg-opacity-75 rounded p-1;
             }
             .pink-highlight {
-                @apply bg-pink-500 bg-opacity-75 rounded;
+                @apply bg-pink-500 bg-opacity-75 rounded p-1;
             }
             .hidden {
                 display: none;
@@ -394,6 +394,30 @@ static HTML_HEAD: &str = r#"
             }
             .spoiler:hover {
                 @apply cursor-pointer;
+            }
+            .monospace {
+                @apply font-mono bg-gray-200 dark:bg-gray-700 p-1 rounded shadow;
+            }
+            /* WebKit */
+            ::-webkit-scrollbar {
+            width: 0px;
+            }
+
+            ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            }
+
+            ::-webkit-scrollbar-thumb {
+            background: #888;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+            }
+
+            * {
+            scrollbar-width: none;
+            /* Firefox */
             }
         }   
     </style>
@@ -455,14 +479,14 @@ static HTML_HEAD: &str = r#"
 </head>
 
 <body>
-    <div class="flex w-100%">
-    <div class="w-1/4"></div>
-    <div class="w-1/2 flex-col space-y-2 p-2">
+<div class="flex w-full">
+<div class="w-1/4 hidden md:block"></div>
+<div class="w-full md:w-1/2 flex-col space-y-2 py-4 px-4 md:px-2">
 "#;
 
 static HTML_TAIL: &str = r#"
 </div>
-<div class="w-1/4"></div>
+<div class="w-1/4 hidden md:block"></div>
 </div>
 </body>
 
